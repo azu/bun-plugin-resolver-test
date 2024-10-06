@@ -1,19 +1,36 @@
-import "rambda"; // Static import
-import("rambda");// Dynamic import
-import { importMetaResolve, loadDynamicModule, loadDynamicModuleHard } from "./index.ts";
+import { plugin, type PluginBuilder } from "bun";
 
-try {
-  await loadDynamicModuleHard();
-} catch (error) {
-  console.error("loadDynamicModuleHard failed", error);
-}
-try {
-  await loadDynamicModule("rambda");
-} catch (error) {
-  console.error("loadDynamicModule failed", error);
-}
-try {
-  await importMetaResolve("rambda");
-} catch (error) {
-  console.error("importMetaResolve failed", error);
-}
+await plugin({
+  name: "bun-test",
+  target: "bun",
+  setup(build: PluginBuilder): void | Promise<void> {
+    build.onResolve({ filter: /.*/ }, async (args) => {
+      console.log("resolve", args);
+      return args
+    });
+    build.onLoad({ filter: /.*/ }, async (args) => {
+      console.log("onload", args);
+      return {
+        contents: "console.log('Hello, world!')",
+        loader: "ts",
+      };
+    });
+    build.module("rambda", () => {
+      console.log("module load");
+      return {
+        exports: {},
+        loader: "object"
+      }
+    })
+  }
+});
+
+// resolve
+console.group("resolve")
+import.meta.resolve("rambda");
+console.groupEnd()
+
+// import
+console.group("import")
+await import("rambda");
+console.groupEnd()

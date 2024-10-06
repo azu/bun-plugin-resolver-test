@@ -25,12 +25,24 @@ await plugin({
   }
 });
 
-// resolve
+// resolve existing module
 console.group("resolve")
 import.meta.resolve("rambda");
 console.groupEnd()
 
-// import
+// import existing module
 console.group("import")
 await import("rambda");
+console.groupEnd()
+
+// resolve unknown extension module
+console.group("resolve - unknown extension")
+import.meta.resolve("rambda.ext");
+console.groupEnd()
+
+// import unknown extension module
+console.group("import - unknown extension")
+try {
+  await import("rambda.ext");
+}catch{}
 console.groupEnd()

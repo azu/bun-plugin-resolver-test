@@ -1,0 +1,49 @@
+---
+name: test
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "**"
+jobs:
+  bun:
+    timeout-minutes: 10
+    permissions:
+      contents: "read"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: ".bun-version"
+      - name: Install
+        run: bun install
+      - name: Build binary
+        run: bun run build
+      - name: Rm -rf node_modules
+        run: rm -rf node_modules
+      - name: Execute Binary
+        run: ./dist/bun-example
+  deno:
+    timeout-minutes: 10
+    permissions:
+      contents: "read"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denolib/setup-deno@v2
+        with:
+          deno-version: "1.x"
+      - name: Build binary
+        run: deno task compile
+      - name: Execute Binary
+        run: ./dist/deno-example
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
